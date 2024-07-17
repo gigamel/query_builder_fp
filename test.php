@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use FpDbTest\AlekseySh\SQL\Constraints;
 use FpDbTest\AlekseySh\SQL\QueryBuilder;
 use FpDbTest\Database;
 use FpDbTest\DatabaseTest;
@@ -54,7 +55,13 @@ $specifierCollection = new SpecifierCollection(
 
 
 $queryBuilder = new QueryBulderAdapter(
-    new QueryBuilder($specifierCollection)
+    new QueryBuilder(
+        $specifierCollection,
+        new Constraints([
+            1000000000000,
+            'SELECT',
+        ])
+    )
 );
 
 $db = new Database($mysqli, $queryBuilder);

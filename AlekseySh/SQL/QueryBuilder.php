@@ -19,6 +19,7 @@ class QueryBuilder
     
     /**
      * @param SpecifierCollectionInterface $specifierCollection
+     * @param ConstraintsInterface $constraints
      * @param ConditionalBlockParserInterface|null $conditionalBlockParser
      * @param SpecifierParserInterface|null $specifierParser
      *
@@ -26,6 +27,7 @@ class QueryBuilder
      */
     public function __construct(
         protected readonly SpecifierCollectionInterface $specifierCollection,
+        protected readonly ConstraintsInterface $constraints,
         ?ConditionalBlockParserInterface $conditionalBlockParser = null,
         ?SpecifierParserInterface $specifierParser = null,
     ) {
@@ -46,13 +48,15 @@ class QueryBuilder
         foreach ($this->conditionalBlockParser->parseBlocks($query) as $conditionalBlock) {
             $specifiers = $this->specifierParser->parseSpecifiers($this->specifierCollection, $conditionalBlock);
             
+            $conditionalBlockArgs = array_splice($args, -count($specifiers));
+
             $query = str_replace(
                 $conditionalBlock,
-                $this->conditionalBlockParser->normalizeBlock(
+                $this->constraints->hasBadValue($conditionalBlockArgs) ? '' : $this->conditionalBlockParser->normalizeBlock(
                     $this->replaceVars(
                         $conditionalBlock,
                         $specifiers,
-                        array_splice($args, -count($specifiers))
+                        $conditionalBlockArgs
                     )
                 ),
                 $query
